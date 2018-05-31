@@ -1,7 +1,7 @@
 # EditorTest
 
-- TODO Si possono aggiungere dei parametri custom agli elementi e creare classi nuove( per esempio creare un array con i parametri aggiunti e i loro valori), e associare a tali parametri dei Listener sempre custom ad esempio:
-  
+- TODO Si possono aggiungere dei parametri custom agli elementi e creare classi nuove( per esempio creare un array con i parametri aggiunti e i loro valori), e associare a tali parametri dei Listener sempre custom ad esempio:<br>
+  ```javascript
   // Using the option parameter and a custom attribute
   graph.on('change:custom', function(element, custom, opt) {
     if (opt.consoleOutput) {
@@ -9,3 +9,4 @@
     }
   });
   element2.prop('custom', 'myValue', { consoleOutput: true });
+```
