@@ -21,7 +21,7 @@
   element2.prop('custom', 'myValue', { consoleOutput: true });
   ```
 
-- **IDEA** Per creare la "HALO" intorno a un elemento seguire i suggerimenti [su google groups](https://groups.google.com/forum/#!topic/jointjs/v1Ntouy5pXU).
+- **IDEA** ~~Per creare la "HALO" intorno a un elemento seguire i suggerimenti [su google groups](https://groups.google.com/forum/#!topic/jointjs/v1Ntouy5pXU).~~ **Trovata soluzione con esempio dentro il file htmlInsideElements**.
 
 	
 	
