@@ -9,22 +9,47 @@
 
     /**
      * Aggregazione dei vari oggetti che si possono creare
-     *  x = constructorManager['stringMethodName'](params)
+     *  x = constructorManager['stringMethodName'](args)
      */
     var constructorManager = {
 
         rectType1: function (x, y) {
 
-            return new joint.shapes.basic.Rect({
+            return new joint.shapes.devs.Model({
                 position: {
                     x: x,
                     y: y
                 },
                 size: {
-                    width: 100,
-                    height: 30
+                    width: 90,
+                    height: 90
+                },
+                inPorts: ['in'],
+                outPorts: ['out'],
+                ports: {
+                    groups: {
+                        'in': {
+                            attrs: {
+                                '.port-body': {
+                                    fill: '#16A085'
+                                }
+                            }
+                        },
+                        'out': {
+                            attrs: {
+                                '.port-body': {
+                                    fill: '#E74C3C'
+                                }
+                            }
+                        }
+                    }
                 },
                 attrs: {
+                    '.label': {
+                        text: 'Model 1',
+                        'ref-x': .5,
+                        'ref-y': .2
+                    },
                     rect: {
                         'stroke-width': '5',
                         'stroke-opacity': .7,
@@ -33,29 +58,47 @@
                         ry: 3,
                         fill: 'lightgray',
                         'fill-opacity': .5
-                    },
-                    text: {
-                        text: 'TYPE 1',
-                        'font-size': 10,
-                        style: {
-                            'text-shadow': '1px 1px 1px lightgray'
-                        }
                     }
                 }
             });
         },
 
         rectType2: function (x, y) {
-            return new joint.shapes.basic.Rect({
+            return new joint.shapes.devs.Model({
                 position: {
                     x: x,
                     y: y
                 },
                 size: {
-                    width: 100,
-                    height: 30
+                    width: 90,
+                    height: 50
+                },
+                inPorts: ['in1', 'in2'],
+                outPorts: ['out'],
+                ports: {
+                    groups: {
+                        'in': {
+                            attrs: {
+                                '.port-body': {
+                                    fill: '#16A085'
+                                }
+                            }
+                        },
+                        'out': {
+                            attrs: {
+                                '.port-body': {
+                                    fill: '#E74C3C'
+                                }
+                            }
+                        }
+                    }
                 },
                 attrs: {
+                    '.label': {
+                        text: 'Model 2',
+                        'ref-x': .5,
+                        'ref-y': .2
+                    },
                     rect: {
                         'stroke-width': '5',
                         'stroke-opacity': .7,
@@ -64,13 +107,6 @@
                         ry: 3,
                         fill: 'lightgray',
                         'fill-opacity': .5
-                    },
-                    text: {
-                        text: 'tYPE 2',
-                        'font-size': 10,
-                        style: {
-                            'text-shadow': '1px 1px 1px lightgray'
-                        }
                     }
                 }
             });
@@ -78,6 +114,11 @@
     }
     var objectPath;
 
+    // Pile per gestire do e undo
+    var undoStack = [];
+    var redoStack = [];
+    
+    
     /**
      * Oggetto che contiene tutte gli element e link
      */
@@ -89,7 +130,16 @@
         height: 4000,
         model: graph,
         gridSize: 10,
-        drawGrid: true
+        drawGrid: true,
+        defaultRouter: {
+            name: 'manhattan'
+        },
+        defaultConnector: {
+            name: 'jumpover',
+            args: {
+                radius: 20
+            }
+        }
     });
 
     /**
@@ -104,16 +154,15 @@
         objectPath = "rectType2";
     });
 
-    /**
-     * Evento che controlla quali elementi disegnare quando l'utente clicca su una parte di foglio vuota
+    /*********************************************************
+     * EVENTS
      */
-    paper.on('blank:pointerdown', function(evt, x, y) { 
-        
-        if(objectPath != undefined && constructorManager[objectPath]){
-            graph.addCell(constructorManager[objectPath](x,y));   
-        }
-        
-        else return;
+
+    paper.on('blank:pointerdown', function (evt, x, y) {
+
+        if (objectPath != undefined && constructorManager[objectPath]) {
+            graph.addCell(constructorManager[objectPath](x, y));
+        } else return;
     });
 
 
