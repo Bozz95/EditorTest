@@ -114,11 +114,31 @@
     }
     var objectPath;
 
-    // Pile per gestire do e undo
-    var undoStack = [];
-    var redoStack = [];
-    
-    
+    /*var commandManager = (function () {
+        // Pile per gestire do e undo
+        var undoStack = [];
+        var redoStack = [];
+        var lastModified;
+
+
+
+    })();*/
+
+    var commandManager = joint.dia.Graph.extend({
+        undoStack: new Array(),
+        redoStack: new Array(),
+
+        unDo:  function() {
+
+        },
+        reDo:  function() {
+
+        },
+
+
+    });
+
+
     /**
      * Oggetto che contiene tutte gli element e link
      */
@@ -171,7 +191,14 @@
 
     // also when an user stops interacting with an element.
     //paper.on('cell:pointerup', myAdjustVertices);
+    graph.on('change:source change:target', function (link) {
+        var sourcePort = link.get('source').port;
+        var sourceId = link.get('source').id;
+        var targetPort = link.get('target').port;
+        var targetId = link.get('target').id;
 
+        // Qui posso gestire il cambiamento di target e source dei link
+    });
 
 
 })(joint);
