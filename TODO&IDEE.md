@@ -11,12 +11,12 @@
 
 - **TODO** Gestire i seguenti eventi su grafico per DO e UNDO:
 
-  -[ ]  'change:position'
-  -[ ]  'change:target' 
-  -[ ]  'change:source'
-  -[ ]  'remove'
-  -[ ]  'add'
-  -[ ]  '... da trovare'
+  - [ ]  'change:position'
+  - [ ]  'change:target' 
+  - [ ]  'change:source'
+  - [ ]  'remove'
+  - [ ]  'add'
+  - [ ]  '... da trovare'
 
 
 - **IDEA** Si possono aggiungere dei parametri custom agli elementi e creare classi nuove( per esempio creare un array con i parametri aggiunti e i loro valori), e associare a tali parametri dei Listener sempre custom ad esempio:
