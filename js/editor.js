@@ -180,6 +180,15 @@
                 console.log('pipputo' + ev);
         });
 
+        myGraph.on('add', function(ev, cell){
+            toUndo.push({
+                command: 'remove',
+                cellView: cell.model
+            })
+
+            console.log(toUndo);
+        });
+
         // EVENTI PER PAPER
 
         paper.on('blank:pointerdown', function (evt, x, y) {
@@ -196,7 +205,11 @@
         return {
 
             undo: function () {
-
+                if(toUndo.length){
+                    var cmd = toUndo.pop();
+                    console.log(cmd);
+                    myGraph.removeCells(cmd.cellView);
+                }
             },
 
             redo: function () {
@@ -230,4 +243,9 @@
 
     });
 
+    $('#btnUndo').on("mouseup", function() {
+
+        commandManager.undo();
+
+    })
 })(joint);
