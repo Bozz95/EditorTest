@@ -65,6 +65,31 @@
 
     </div>
 
+
+    <form id="flickrSearch">
+ 
+        <input type="text" name="tag" id="query"/>
+      
+        <input type="submit" name="submit" value="submit"/>
+      
+     </form>
+      
+      
+      
+     <div id="lastQuery"></div>
+      
+     <ol id="searchResults"></ol>
+      
+      
+      
+     <script id="resultTemplate" type="text/html">
+         <% _.each(items, function( item ){ %>
+             <li><img src="<%= item.media.m %>"/></li>
+         <% });%>
+     </script>
+
+
+     
     <script src="js\pubsubprova.js"></script>
 </body>
 
