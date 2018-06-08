@@ -69,10 +69,34 @@
                     }
                 }
             });
+
+            m1.attr({
+                image: {
+                    // pointerdown on the image SVG node will trigger the `element:delete` event
+                    event: 'element:delete',
+                    xlinkHref: 'trash.png',
+                    width: 20,
+                    height: 20
+                }
+            });
+
+
             graph.addCell(m1);
 
             var m2 = m1.clone().translate(300, 0).attr('.label/text', 'Model 2');
             graph.addCell(m2);
+
+
+            // Binding handler to the event
+            paper.on('element:delete', function(elementView, evt) {
+                // Stop any further actions with the element view e.g. dragging
+                console.log('entrato in ' + evt);
+                evt.stopPropagation();
+                if (confirm('Are you sure you want to delete this element?')) {
+                    elementView.model.remove();
+                }
+            });
+
 
             graph.on('change:source change:target', function (link) {
                 var sourcePort = link.get('source').port;

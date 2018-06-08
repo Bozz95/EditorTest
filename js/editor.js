@@ -141,8 +141,8 @@
                  * @param {String} elementName String associata al metodo di cui si deve verificare l'esistenza nel _make
                  * @returns {boolean} true se il metodo in _make esiste, false altrimenti
                  */
-                canMake: function(elementName) {
-                    return (_make[elementName]? true : false);
+                canMake: function (elementName) {
+                    return (_make[elementName] ? true : false);
                 }
             }
         })()
@@ -171,21 +171,60 @@
             }
         });
 
-        // EVENTI PER GRAPH
+        // variabile che indica lo stato di quando si sta annullando o riattuando un'azione
+        var reverting;
 
+        // METODI PRIVATI 
+
+        /**
+         * Metodo per attuare l'opzione inversa di un comando.
+         * @param {Object} action Oggetto composto da vari attributi in base al tipo di azione da invertire
+         * @param {String} action.command  Attributo necessario per identificare il tipo di comando
+         * @param {String} action.cell Elemento del grafico da modificare
+         */
+        var reverse = function (action) {
+            reverting = true;
+            switch (action.command) {
+                case 'add':
+                    // da gestire target e source del link 
+                    if(action.cell.isLink())
+                        console.log("ho provato a rimuovere un link");
+                    else if(action.cell.isElement())
+                        console.log("ho provato a rimuovere un elemento");
+                    action.cell.remove();
+                    action.command = "remove";
+                    break;
+                case 'remove':
+                    if(action.cell.isLink())
+                        console.log("ho provato a riaggiungere un link");
+                    else if(action.cell.isElement())
+                        console.log("ho provato a riaggiugnere un elemento");
+                    action.cell.addTo(myGraph);
+                    action.command = "add";
+                    break;
+
+            }
+            reverting = false;
+        }
+
+
+        // EVENTI PER GRAPH
+        /*
         myGraph.on('all', function (ev, link) {
             if (ev == 'change:target')
                 console.log(ev + ' ' + link.get('target').port);
             else
                 console.log('pipputo' + ev);
-        });
+        });*/
 
-        myGraph.on('add', function(ev, cell){
+        myGraph.on('add', function (cell, evt) {
+            
             toUndo.push({
-                command: 'remove',
-                cellView: cell.model
+                command: 'add',
+                cell: cell
             })
 
+            !reverting? toRedo = []:null;
             console.log(toUndo);
         });
 
@@ -205,22 +244,38 @@
         return {
 
             undo: function () {
-                if(toUndo.length){
+                if (toUndo.length) {
+                    console.log('lunghezza toUndo: ' + toUndo.length);
+                    console.log('lunghezza toRedo: ' + toRedo.length);
                     var cmd = toUndo.pop();
                     console.log(cmd);
-                    myGraph.removeCells(cmd.cellView);
+                    toRedo.push(cmd);
+                    //myGraph.removeCells(cmd.cell);
+                    reverse(cmd);
+                    console.log('lunghezza toUndo: ' + toUndo.length);
+                    console.log('lunghezza toRedo: ' + toRedo.length);
                 }
             },
 
             redo: function () {
-
+                if (toRedo.length) {
+                    console.log('lunghezza toRedo: ' + toRedo.length);
+                    console.log('lunghezza toUndo: ' + toUndo.length);
+                    var cmd = toRedo.pop();
+                    console.log(cmd);
+                    // addCell scatena già l'evento add, percui l'elemento viene automaticamente aggiunto alla undo
+                    //myGraph.addCell(cmd.cell);
+                    reverse(cmd);
+                    console.log('lunghezza toRedo: ' + toRedo.length);
+                    console.log('lunghezza toUndo: ' + toUndo.length);
+                }
             },
 
             /**
              * Setter per objectName per poter farlo interfacciare con la UI
              * @param {String} elementName 
              */
-            setObjectName: function(elementName) {
+            setObjectName: function (elementName) {
                 objectName = elementName;
             }
         }
@@ -238,14 +293,20 @@
     });
 
     $('#btnType2').on("mouseup", function () {
-        
+
         commandManager.setObjectName('rectType2');
 
     });
 
-    $('#btnUndo').on("mouseup", function() {
+    $('#btnUndo').on("mouseup", function () {
 
         commandManager.undo();
+
+    })
+
+    $('#btnRedo').on("mouseup", function () {
+
+        commandManager.redo();
 
     })
 })(joint);
