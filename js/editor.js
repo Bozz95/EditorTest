@@ -208,7 +208,7 @@
         }
 
 
-        // EVENTI PER GRAPH
+        // trovare gli eventi sul grafico
         /*
         myGraph.on('all', function (ev, link) {
             if (ev == 'change:target')
