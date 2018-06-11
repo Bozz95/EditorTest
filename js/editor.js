@@ -207,15 +207,66 @@
             reverting = false;
         }
 
+       /*  TRISTE TENTATIVO DI CREARE UN OGGETTO CHE CATTURASSE TUTTI GLI EVENTI
+       var dispatcher = {};
+       _.extend(dispatcher,myGraph);
+
+        console.log(Backbone.Events);
+        dispatcher.on('all', function(evt) {
+            console.log('dispatcher on ' + evt);
+        })
+        */
 
         // trovare gli eventi sul grafico
-        /*
+        
         myGraph.on('all', function (ev, link) {
             if (ev == 'change:target')
                 console.log(ev + ' ' + link.get('target').port);
             else
-                console.log('pipputo' + ev);
-        });*/
+                console.log('pipputo: ' + ev);
+        });
+
+        paper.on('all', function(evt) {
+            console.log('paper: ' + evt);
+        })
+
+        var stringPosOld, stringPosNew;
+
+        paper.on('element:pointerdown', function(cellView, evt) {
+
+            var cell = cellView.model;
+            console.log(cell);
+            console.log(evt);
+            cell.isElement()? stringPosOld = cell.position() : null;
+
+        });
+
+        paper.on('element:pointerup', function(cellView, evt) {
+
+            var cell = cellView.model;
+            if(cell.isElement()) {
+
+                stringPosNew = cell.position();
+                if(stringPosNew != stringPosOld) {
+                    console.log('PUSH NEL toUndo[]');
+                }
+                else    
+                    console.log('non faccio nulla');
+            }
+
+        });
+        /*myGraph.on('change:position', function(cell, ev) {
+            console.log("posizione dell'elemento: " + cell.position());
+        });
+
+        myGraph.on('batch:stop', function(cell) {
+            console.log('------DENTRO ' + cell +'------');
+            console.log(cell);
+            var cellView = paper.findViewByModel(cell);
+            console.log("posizione dell'ultimo oggetto" + cellView);
+            //console.log("posizione dell'elemento: " + cell.position());
+
+        })*/
 
         myGraph.on('add', function (cell, evt) {
             
