@@ -185,31 +185,57 @@
         var reverse = function (action) {
             reverting = true;
             switch (action.command) {
+                
                 case 'add':
-                    // da gestire target e source del link 
+                    
+                    // TODO da gestire target e source di un link nel quale non sono ancora stati ancorati a un oggetto 
                     if(action.cell.isLink())
                         console.log("ho provato a rimuovere un link");
                     else if(action.cell.isElement())
                         console.log("ho provato a rimuovere un elemento");
+                    
                     action.cell.remove();
                     action.command = "remove";
+                    
                     break;
+
                 case 'remove':
+
                     if(action.cell.isLink())
                         console.log("ho provato a riaggiungere un link");
                     else if(action.cell.isElement())
                         console.log("ho provato a riaggiugnere un elemento");
+
                     action.cell.addTo(myGraph);
                     action.command = "add";
+                    
+                    break;
+                
+                case 'translate':
+                    
+                    if(action.cell.isElement) {
+                       
+                        action.cell.position(action.oldPosition.x, action.oldPosition.y);
+                        var app = action.oldPosition.clone();
+                       
+                        //inverto le coordinate vecchie e nuove di action per poterlo mettere in toRedo
+                        action.oldPosition = action.newPosition;
+                        action.newPosition = app;
+                    
+                    }
                     break;
 
             }
             reverting = false;
         }
 
-       /*  TRISTE TENTATIVO DI CREARE UN OGGETTO CHE CATTURASSE TUTTI GLI EVENTI
+       /*  
+       //TRISTE TENTATIVO DI CREARE UN OGGETTO CHE CATTURASSE TUTTI GLI EVENTI
        var dispatcher = {};
-       _.extend(dispatcher,myGraph);
+       _.extend(dispatcher,Backbone.Events);
+
+       //oppure
+       dispatcher = _.clone(Backbone.Events);
 
         console.log(Backbone.Events);
         dispatcher.on('all', function(evt) {
@@ -217,7 +243,7 @@
         })
         */
 
-        // trovare gli eventi sul grafico
+        // trovare gli eventi sul grafico, ovvero sui model
         
         myGraph.on('all', function (ev, link) {
             if (ev == 'change:target')
@@ -226,18 +252,24 @@
                 console.log('pipputo: ' + ev);
         });
 
+        /*  catturo tutti gli eventi sui modelView
+            per accedere al model uso modelView.model
+        
+        */
         paper.on('all', function(evt) {
             console.log('paper: ' + evt);
         })
 
-        var stringPosOld, stringPosNew;
+        // oggetti di tipo g.Point per memorizzare le posizioni degli elementi nel grafico
+        var oldPosition, newPosition;
 
         paper.on('element:pointerdown', function(cellView, evt) {
 
             var cell = cellView.model;
             console.log(cell);
             console.log(evt);
-            cell.isElement()? stringPosOld = cell.position() : null;
+            // cell.position() ritorna un oggetto punto
+            cell.isElement()? oldPosition = cell.position() : null;
 
         });
 
@@ -245,9 +277,18 @@
 
             var cell = cellView.model;
             if(cell.isElement()) {
+                // cell.position() ritorna un oggetto punto
+                newPosition = cell.position();
+                if(newPosition != oldPosition) {
 
-                stringPosNew = cell.position();
-                if(stringPosNew != stringPosOld) {
+                    console.log(oldPosition + "    " + newPosition);
+                    toUndo.push({
+                        command: "translate",
+                        cell: cell,
+                        oldPosition: oldPosition,
+                        newPosition: newPosition
+                    });
+
                     console.log('PUSH NEL toUndo[]');
                 }
                 else    
@@ -270,12 +311,16 @@
 
         myGraph.on('add', function (cell, evt) {
             
-            toUndo.push({
-                command: 'add',
-                cell: cell
-            })
-
-            !reverting? toRedo = []:null;
+            if(!reverting) {
+                
+                toUndo.push({
+                    command: 'add',
+                    cell: cell
+                })
+                // nuovo elemnto, la pila dei redo viene svuotato
+                toRedo = [];
+            }
+            
             console.log(toUndo);
         });
 
@@ -300,9 +345,9 @@
                     console.log('lunghezza toRedo: ' + toRedo.length);
                     var cmd = toUndo.pop();
                     console.log(cmd);
-                    toRedo.push(cmd);
                     //myGraph.removeCells(cmd.cell);
                     reverse(cmd);
+                    toRedo.push(cmd);
                     console.log('lunghezza toUndo: ' + toUndo.length);
                     console.log('lunghezza toRedo: ' + toRedo.length);
                 }
@@ -317,6 +362,7 @@
                     // addCell scatena già l'evento add, percui l'elemento viene automaticamente aggiunto alla undo
                     //myGraph.addCell(cmd.cell);
                     reverse(cmd);
+                    toUndo.push(cmd);
                     console.log('lunghezza toRedo: ' + toRedo.length);
                     console.log('lunghezza toUndo: ' + toUndo.length);
                 }
