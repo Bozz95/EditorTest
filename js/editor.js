@@ -38,7 +38,8 @@
                                 'in': {
                                     attrs: {
                                         '.port-body': {
-                                            fill: '#16A085'
+                                            fill: '#16A085',
+                                            magnet: 'passive'
                                         }
                                     }
                                 },
@@ -92,7 +93,8 @@
                                 'in': {
                                     attrs: {
                                         '.port-body': {
-                                            fill: '#16A085'
+                                            fill: '#16A085',
+                                            magnet: 'passive'
                                         }
                                     }
                                 },
@@ -160,6 +162,13 @@
             model: myGraph,
             gridSize: 10,
             drawGrid: true,
+            defaultLink: new joint.dia.Link({
+                attrs: {
+                    '.marker-target': {
+                        d: 'M 10 0 L 0 5 L 10 10 z'
+                    }
+                }
+            }),
             defaultRouter: {
                 name: 'manhattan'
             },
@@ -168,7 +177,15 @@
                 args: {
                     radius: 20
                 }
-            }
+            },
+            validateConnection: function (cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
+                // Prevent linking from input ports.
+                if (magnetS && magnetS.getAttribute('port-group') === 'in') return false;
+                // Prevent linking from output ports to input ports within one element.
+                //if (cellViewS === cellViewT) return false;
+                // Prevent linking to input ports.
+                return magnetT && magnetT.getAttribute('port-group') === 'in';
+            },
         });
 
         // variabile che indica lo stato di quando si sta annullando o riattuando un'azione
@@ -183,148 +200,107 @@
          * @param {String} action.cell Elemento del grafico da modificare
          */
         var reverse = function (action) {
+
             reverting = true;
             switch (action.command) {
-                
+
                 case 'add':
-                    
+
                     // TODO da gestire target e source di un link nel quale non sono ancora stati ancorati a un oggetto 
-                    if(action.cell.isLink())
+                    if (action.cell.isLink())
                         console.log("ho provato a rimuovere un link");
-                    else if(action.cell.isElement())
+                    else if (action.cell.isElement())
                         console.log("ho provato a rimuovere un elemento");
-                    
+
                     action.cell.remove();
+
                     action.command = "remove";
-                    
+
                     break;
 
                 case 'remove':
 
-                    if(action.cell.isLink())
+                    if (action.cell.isLink())
                         console.log("ho provato a riaggiungere un link");
-                    else if(action.cell.isElement())
+                    else if (action.cell.isElement())
                         console.log("ho provato a riaggiugnere un elemento");
 
                     action.cell.addTo(myGraph);
                     action.command = "add";
-                    
+
                     break;
-                
+
                 case 'translate':
-                    
-                    if(action.cell.isElement) {
-                       
+
+                    if (action.cell.isElement) {
+
                         action.cell.position(action.oldPosition.x, action.oldPosition.y);
                         var app = action.oldPosition.clone();
-                       
+
                         //inverto le coordinate vecchie e nuove di action per poterlo mettere in toRedo
                         action.oldPosition = action.newPosition;
                         action.newPosition = app;
-                    
+
                     }
                     break;
 
             }
+
             reverting = false;
         }
 
-       /*  
-       //TRISTE TENTATIVO DI CREARE UN OGGETTO CHE CATTURASSE TUTTI GLI EVENTI
-       var dispatcher = {};
-       _.extend(dispatcher,Backbone.Events);
-
-       //oppure
-       dispatcher = _.clone(Backbone.Events);
-
-        console.log(Backbone.Events);
-        dispatcher.on('all', function(evt) {
-            console.log('dispatcher on ' + evt);
-        })
-        */
-
         // trovare gli eventi sul grafico, ovvero sui model
-        
+
         myGraph.on('all', function (ev, link) {
             if (ev == 'change:target')
-                console.log(ev + ' ' + link.get('target').port);
+                console.log(ev + ' ' + link.get('target').x + '@' + link.get('target').y);
             else
                 console.log('pipputo: ' + ev);
         });
 
-        /*  catturo tutti gli eventi sui modelView
-            per accedere al model uso modelView.model
-        
-        */
-        paper.on('all', function(evt) {
-            console.log('paper: ' + evt);
-        })
-
-        // oggetti di tipo g.Point per memorizzare le posizioni degli elementi nel grafico
-        var oldPosition, newPosition;
-
-        paper.on('element:pointerdown', function(cellView, evt) {
-
-            var cell = cellView.model;
-            console.log(cell);
-            console.log(evt);
-            // cell.position() ritorna un oggetto punto
-            cell.isElement()? oldPosition = cell.position() : null;
+        myGraph.on('batch:start', function(obj) {
+     
+            console.log(obj.cell.isElement());
+            console.log(obj.cell.isLink());
 
         });
 
-        paper.on('element:pointerup', function(cellView, evt) {
+        myGraph.on('batch:stop', function(obj) {
 
-            var cell = cellView.model;
-            if(cell.isElement()) {
-                // cell.position() ritorna un oggetto punto
-                newPosition = cell.position();
-                if(newPosition != oldPosition) {
+            if(obj.cell.isElement()) {
 
-                    console.log(oldPosition + "    " + newPosition);
-                    toUndo.push({
-                        command: "translate",
-                        cell: cell,
-                        oldPosition: oldPosition,
-                        newPosition: newPosition
-                    });
-
-                    console.log('PUSH NEL toUndo[]');
-                }
-                else    
-                    console.log('non faccio nulla');
             }
+            else if(obj.cell.isLink()) {
+
+            }
+                
+            //alert('ho provato a cambiare target');
 
         });
-        /*myGraph.on('change:position', function(cell, ev) {
-            console.log("posizione dell'elemento: " + cell.position());
-        });
-
-        myGraph.on('batch:stop', function(cell) {
-            console.log('------DENTRO ' + cell +'------');
-            console.log(cell);
-            var cellView = paper.findViewByModel(cell);
-            console.log("posizione dell'ultimo oggetto" + cellView);
-            //console.log("posizione dell'elemento: " + cell.position());
-
-        })*/
 
         myGraph.on('add', function (cell, evt) {
-            
-            if(!reverting) {
-                
+
+            if (!reverting) {
+
                 toUndo.push({
                     command: 'add',
                     cell: cell
                 })
-                // nuovo elemnto, la pila dei redo viene svuotato
+                // nuovo elemnto, la pila dei redo viene svuotata
                 toRedo = [];
             }
-            
+
             console.log(toUndo);
         });
 
         // EVENTI PER PAPER
+
+        /*  catturo tutti gli eventi sui modelView
+            per accedere al model uso modelView.model
+        */
+        paper.on('all', function (evt) {
+            console.log('paper: ' + evt);
+        })
 
         paper.on('blank:pointerdown', function (evt, x, y) {
             console.log(factory.canMake(objectName) + '---' + objectName);
@@ -334,7 +310,34 @@
 
         });
 
+        // oggetti di tipo g.Point per memorizzare le posizioni degli elementi nel grafico
+        var oldPosition, newPosition;
 
+        paper.on('element:pointerdown', function (cellView, evt) {
+
+            var cell = cellView.model;
+            // cell.position() ritorna un oggetto punto
+            cell.isElement() ? oldPosition = cell.position() : null;
+
+        });
+
+        paper.on('element:pointerup', function (cellView, evt) {
+
+            var cell = cellView.model;
+            // cell.position() ritorna un oggetto punto
+            newPosition = cell.position();
+            if (newPosition != oldPosition) {
+
+                toUndo.push({
+                    command: "translate",
+                    cell: cell,
+                    oldPosition: oldPosition,
+                    newPosition: newPosition
+                });
+
+            }
+
+        });
 
 
         return {

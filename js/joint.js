@@ -10345,7 +10345,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
         },
 
         _removeCell: function (cell, collection, options) {
-
+            
             options = options || {};
 
             if (!options.clear) {
