@@ -244,37 +244,98 @@
                     }
                     break;
 
+                case 'change:target':
+
+                    //prendo primo elemento(vecchio target) dell'array targetOldNew
+                    var targetOld = action.targetOldNew.shift();
+                    action.cell.source(targetOld);
+                    //riordino array targetOldNew al contrario
+                    action.targetOldNew.push(targetOld);
+
+                    break;
+
             }
 
             reverting = false;
         }
 
+        
+        function whatisthis(cell) {
+            if(cell.isElement()) {
+                return "this is an element";
+            }
+            else if(cell.isLink()) {
+                return "this is a link";
+            }
+            else return "DUNNO";
+        }
         // trovare gli eventi sul grafico, ovvero sui model
 
         myGraph.on('all', function (ev, link) {
-            if (ev == 'change:target')
+            /*if (ev == 'change:target')
                 console.log(ev + ' ' + link.get('target').x + '@' + link.get('target').y);
             else
-                console.log('pipputo: ' + ev);
+                console.log('pipputo: ' + ev);*/
         });
 
-        myGraph.on('batch:start', function(obj) {
-     
-            console.log(obj.cell.isElement());
-            console.log(obj.cell.isLink());
+        myGraph.on('batch:start', function (obj) {
+            console.log("dentro batch start" );// whatisthis(obj.cell));
+            //debugger;
+            if (!reverting) {
+                // debugger;
+                if (obj.cell.isElement()) {
+
+                } else if (obj.cell.isLink()) {
+                    var pre = toUndo.pop();
+                    var guardia1 =  pre.command != 'add', guardia2 = pre.cell != obj.cell; 
+                    //verifico di non aver appena ggiunto il link
+                    if (pre.command != 'add' || pre.cell != obj.cell) {
+                        //ripristino il comando precedente da annullare nell'ordine corretto
+                        toUndo.push(pre);
+                        //pusho un comando change:target nella pila con il valore del target iniziale
+                        toUndo.push({
+                            command: "change:target",
+                            cell: obj.cell,
+                            targetOldNew: [obj.cell.target()]
+                        });
+                    } else toUndo.push(pre);
+
+                }
+
+            }
+
 
         });
 
-        myGraph.on('batch:stop', function(obj) {
+        myGraph.on('batch:stop', function (obj) {
+            console.log("dentro batch stop");
+            
+            if (!reverting) {
+                //console.log(obj);
+                //debugger;
+                if (obj.cell.isElement()) {
+                    //TODO
+                } else if (obj.cell.isLink()) {
 
-            if(obj.cell.isElement()) {
+                    var pre = toUndo.pop();
+                    console.log(pre);
+                    //controllo se il comando precedente è il comando creato dalla start:batch
+                    if (pre.command == 'change:target') {
+                        //controllo che l'ultima azione nella pila sia relativa alla stessa cella
+                        //if(obj.cell == pre.cell)
 
+                        //pusho nell'array del targetOldNew il nuovo valore del target dopo lo spostamento
+                        pre.command.targetOldNew.push(obj.cell.target());
+                        //rimetto il comando nella pila
+                        toUndo.push(pre);
+                        console.log("dentro batch stop");
+                        console.log(pre);
+                    } else
+                        //rimetto in ordine il comando non relativo alla change:target 
+                        toUndo.push(pre);
+
+                }
             }
-            else if(obj.cell.isLink()) {
-
-            }
-                
-            //alert('ho provato a cambiare target');
 
         });
 
@@ -299,7 +360,7 @@
             per accedere al model uso modelView.model
         */
         paper.on('all', function (evt) {
-            console.log('paper: ' + evt);
+            //console.log('paper: ' + evt);
         })
 
         paper.on('blank:pointerdown', function (evt, x, y) {
