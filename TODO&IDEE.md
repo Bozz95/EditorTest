@@ -3,23 +3,26 @@
 - **TODOS** 
 	
 	- [x] Aggiungere elementi cliccando sul foglio bianco a piacimento;
-	- [x] Collegare gli elementi con dei link tra di loro (con uso delle ports in estremis);
-	- [ ] Creare un gestore di DO e UNDO implementato nell'editor;
-	- [ ] Creare un metodo di multiselect per multigragging e altro;
-	- [ ] Ritocchi di Beauty CSS;
-	- [ ] IDEE..
+	- [x] Collegare gli elementi con dei link tra di loro;
+	- [x] Creare un gestore di DO e UNDO implementato nell'editor;
+  - [ ] Creare un metodo di multiselect per multigragging e altro;
+  - [ ] Migliorare la gestione del command manager per gli eventi del view, quelli del model non andrebbero toccati;
+  - [ ] Aggiungere toolbar per creare, aprire, chiudere o salvare uno script;
+  - [ ] Aggiungere toolbar per selezionare gli elementi **N.B** non necessario in quanto ogni elemento può diventare interattivo e avere bottoni di cancellazione, opzioni di cancellazione da tastera etc etc... chiedere preferenze;
+  - [ ] 
+  - [ ] Creare schede con i parametri da aggiungere ai componenti (**non so quali tipi di parametri ci vadano**);
 
 - **TODO** Gestire i seguenti eventi su grafico per DO e UNDO:
 
-  - [ ]  'change:position'
-  - [ ]  'change:target' 
-  - [ ]  'change:source'
-  - [ ]  'remove'
-  - [ ]  'add'
-  - [ ]  '... da trovare'
+  - [x]  'change:position'
+  - [x]  'change:target' 
+  - [x]  'change:source'
+  - [x]  'remove'
+  - [x]  'add'
+  - [ ]  'altri'
 
 
-- **IDEA** Si possono aggiungere dei parametri custom agli elementi e creare classi nuove( per esempio creare un array con i parametri aggiunti e i loro valori), e associare a tali parametri dei Listener sempre custom ad esempio:
+- **IDEA BRUTTA** Si possono aggiungere dei parametri custom agli elementi e creare classi nuove( per esempio creare un array con i parametri aggiunti e i loro valori), e associare a tali parametri dei Listener sempre custom ad esempio:
 
   ```javascript
   // Using the option parameter and a custom attribute
